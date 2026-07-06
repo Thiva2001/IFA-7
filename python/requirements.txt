@@ -1,0 +1,4 @@
+# IFA-7 Python dependencies
+numpy>=1.21
+matplotlib>=3.4     # only for make_figures.py
+pyserial>=3.5       # only for on-board host_io.run_on_board()
