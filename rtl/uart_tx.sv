@@ -1,9 +1,4 @@
-// ============================================================================
-// uart_tx.sv  --  8N1 UART transmitter (PL-only stream front-end)
-// ----------------------------------------------------------------------------
-// Assert `start` for one clock with `data` valid while `busy` is low.  `busy`
-// stays high until the stop bit completes.  DIV = system_clock / baud.
-// ============================================================================
+
 `timescale 1ns/1ps
 `default_nettype none
 

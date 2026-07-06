@@ -1,17 +1,4 @@
-// ============================================================================
-// nexys_a7_top.sv  --  IFA-7 top level for Digilent Nexys A7 (XC7A100T)
-// ----------------------------------------------------------------------------
-// PL-only system: UART <-> frame controller <-> attention core.  No PS, no DDR.
-// Port names match constraints/nexys_a7.xdc.
-//
-//   Host  --(USB-UART)-->  uart_rx --> frame_ctrl_fsm --> ifa7_attention_core
-//   Host  <--(USB-UART)--  uart_tx <-- frame_ctrl_fsm <-- (O readback)
-//
-// CLOCKING: the 100 MHz oscillator is divided by IFA7_CORE_DIV (=4) on-chip to
-// a 25 MHz core clock, because the fused arithmetic datapath does not close
-// timing at 100 MHz on the -1 part.  All logic (UART included) runs on the
-// divided clock; UART_DIV in the package is referenced to that 25 MHz clock.
-// ============================================================================
+
 `timescale 1ns/1ps
 `default_nettype none
 

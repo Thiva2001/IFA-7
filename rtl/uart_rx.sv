@@ -1,9 +1,4 @@
-// ============================================================================
-// uart_rx.sv  --  8N1 UART receiver (PL-only stream front-end)
-// ----------------------------------------------------------------------------
-// Standard mid-bit sampling receiver.  DIV = system_clock / baud (default 868
-// for 100 MHz / 115200).  `valid` pulses for one clock when `data` is updated.
-// ============================================================================
+
 `timescale 1ns/1ps
 `default_nettype none
 

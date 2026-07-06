@@ -1,19 +1,3 @@
-"""
-ifa7_rtl_emulator.py
-====================
-Cycle-accurate functional emulator of rtl/ifa7_attention_core.sv.
-
-This is NOT the golden model -- it is a deliberate re-implementation of the
-RTL's *finite state machine* (same states, same transitions, same
-"accumulator is final one cycle after the last MAC" timing, same divide
-handshake).  Its purpose is to catch control/timing bugs in the hand-written
-RTL (off-by-ones, premature reads, handshake races) WITHOUT a Verilog
-simulator, by checking that the FSM, when executed cycle by cycle, produces the
-exact same integer output as python/ifa7_golden.py:attention_fixed().
-
-If emulator == golden, the RTL control logic is validated; only SystemVerilog
-syntax/elaboration then remains for Vivado xsim to confirm (sim/run_xsim.tcl).
-"""
 
 import numpy as np
 
@@ -52,7 +36,7 @@ class CoreEmu:
         self.s_arr = [0] * C.BC
         self.p_arr = [0] * C.BC
         self.acc = [0] * C.DK
-        # divider model
+        
         self.div_busy = 0
         self.div_cnt = 0
         self.div_q = 0
@@ -60,15 +44,13 @@ class CoreEmu:
         self.div_dividend = 0
         self.div_divisor = 0
 
-    # ---- combinational helpers (read current regs) -----------------------
+    
     def q_idx(self):  return self.ii * C.DK + self.kk
     def kv_row(self): return self.bb * C.BC + self.jj
     def kk_idx(self): return self.kv_row() * C.DK + self.kk
     def o_idx(self):  return self.ii * C.DK + self.kk
 
     def step_divider(self):
-        """Model the restoring divider: start latches, result after DIV_DW
-        cycles, done pulses for one cycle.  Data is functional (trunc div)."""
         self.div_done = 0
         div_start = (self.state == S_NISSUE)
         if div_start and not self.div_busy:
@@ -89,7 +71,7 @@ class CoreEmu:
                 self.div_busy = 0
                 self.div_done = 1
 
-    # ---- one clock edge --------------------------------------------------
+    
     def step(self):
         st = self.state
         # snapshot combinational values

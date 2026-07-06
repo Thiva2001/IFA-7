@@ -1,16 +1,4 @@
-// ============================================================================
-// tb_frame_core.sv  --  integration test: frame_ctrl_fsm + ifa7_attention_core
-// ----------------------------------------------------------------------------
-// Validates the on-board datapath WITHOUT the slow bit-level UART: it drives
-// frame_ctrl's parallel byte interface (rx_data/rx_valid) with the Q/K/V byte
-// stream, models a UART transmitter (captures tx_data on the tx_start/tx_busy
-// handshake), then deserialises the captured 3-byte big-endian output elements
-// and compares them to sim/vectors/o_expected.mem.
-//
-// This covers exactly what the LEDs showed failing on the board: load
-// addressing, the run trigger, output streaming/byte-order, the TX handshake,
-// and the re-run loopback. Run from sim/ (or via the Vivado project sim_1).
-// ============================================================================
+
 `timescale 1ns/1ps
 `ifndef IFA7_VEC_DIR
   `define IFA7_VEC_DIR "vectors/"

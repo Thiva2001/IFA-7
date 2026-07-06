@@ -1,10 +1,3 @@
-// ============================================================================
-// tb_tile_bank_ctrl.sv  --  functional check for the port-aware ping-pong bank
-// ----------------------------------------------------------------------------
-// Demonstrates that the producer (write, port A, fill bank) and the consumer
-// (read, port B, drain bank) operate on different banks with no contention, and
-// that data written before a swap is readable after it.
-// ============================================================================
 `timescale 1ns/1ps
 
 module tb_tile_bank_ctrl;

@@ -1,14 +1,3 @@
-"""
-host_io.py
-==========
-Host-side packing/unpacking for the IFA-7 UART framing implemented in
-rtl/frame_ctrl_fsm.sv, plus an optional pyserial driver for on-board testing.
-
-Framing (matches frame_ctrl_fsm.sv exactly):
-  TO FPGA   : 3*N*DK bytes = Q (N*DK int8) || K (N*DK int8) || V (N*DK int8),
-              each matrix row-major (idx = row*DK + col).
-  FROM FPGA : N*DK elements, each OUT_W=24 bits sent big-endian (MSB byte first).
-"""
 
 import numpy as np
 

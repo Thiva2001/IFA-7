@@ -1,10 +1,4 @@
-"""
-make_report_pdf.py
-==================
-Assemble docs/Architecture.pdf : a compact, publication-style summary (title +
-key results + the generated figures). Reproducible: `py make_report_pdf.py`
-(run make_figures.py first to refresh the PNGs).
-"""
+
 
 import os
 import numpy as np
@@ -67,8 +61,6 @@ def main():
                  ha="center", size=9, style="italic")
         pdf.savefig(fig); plt.close(fig)
 
-        # --- figure pages ---
-        # (the architecture block diagram is shipped as docs/figures/fig_architecture.svg)
         pages = [
             ("fig_exp_approx.png",   "Figure 1. Fixed-point exp() vs ideal, and its relative error."),
             ("fig_accuracy.png",     "Figure 2. Fixed-point vs float output correlation and error histogram."),

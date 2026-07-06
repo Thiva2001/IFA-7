@@ -1,14 +1,3 @@
-"""
-make_figures.py
-===============
-Generate the publication figures for IFA-7 into docs/figures/.
-Reproducible: re-run `py make_figures.py` to regenerate.
-
-Figures:
-  fig_exp_approx.png      fixed-point exp() vs ideal, and its relative error
-  fig_precision_sweep.png end-to-end RMS error vs score fractional bits SF
-  fig_accuracy.png        fixed vs float output scatter + error histogram
-"""
 
 import os
 import math
@@ -70,7 +59,7 @@ def fig_precision_sweep():
             errs.append(G.error_stats(G.attention_fixed(Q, K, V),
                                       G.attention_float(Q, K, V))["rms"])
         rms.append(np.mean(errs))
-    # restore SF=8
+    
     C.SF = 8
     C._score_factor = (1.0 / math.sqrt(C.DK)) * (1 << 8)
     C.SCALE_M = int(round(C._score_factor * (1 << C.SCALE_SH)))

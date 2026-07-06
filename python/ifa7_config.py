@@ -2,16 +2,12 @@
 ifa7_config.py
 ==============
 Single source of truth for every numeric / structural parameter of the IFA-7
-attention engine.  Both the Python golden model AND the SystemVerilog RTL are
-generated from (or kept consistent with) the constants in this file.
+attention engine. 
 
 IFA-7 = Integer FlashAttention for Artix-7 (bare-metal XC7A100T / Nexys A7).
 
 All arithmetic in the engine is INTEGER / FIXED-POINT.  The choices below are
-made so that the streaming ("online softmax") FlashAttention recursion is
 
-    * non-amplifying  (alpha = exp(m_old - m_new) in (0,1]  ->  contraction), and
-    * bit-exactly reproducible in hardware (no floating point anywhere).
 
 Fixed-point conventions
 -----------------------
@@ -23,18 +19,11 @@ Fixed-point conventions
   acc (PV accum)   : signed,   PF fractional bits       (ACCO_W bits)
   O (output)       : signed,   OUT_F fractional bits    (OUT_W bits)
 
-This module is plain Python (only the standard library + math) so it can run
-anywhere; numpy is only used by the golden model / vector generator.
+
 """
 
 import math
 
-# --------------------------------------------------------------------------
-# 1. Problem shape (verification defaults; all are RTL parameters / generics)
-# --------------------------------------------------------------------------
-# These small-but-representative sizes keep simulation fast while exercising
-# every datapath.  They map cleanly onto a ViT-Tiny head (DK=64, scale N) by
-# changing only these numbers -- see docs/Architecture.md.
 DATA_W = 8     # Q/K/V element width (signed INT8)
 DK     = 32    # head dimension d_k
 N      = 64    # sequence length N (number of queries == number of keys)
@@ -45,9 +34,7 @@ assert N % BR == 0, "N must be a multiple of BR"
 assert N % BC == 0, "N must be a multiple of BC"
 NBLK = N // BC   # number of key/value blocks streamed per query row
 
-# --------------------------------------------------------------------------
-# 2. Score path  (S = (Q.K^T) * (1/sqrt(DK))  in fixed point Q(.,SF))
-# --------------------------------------------------------------------------
+
 ACC_W    = 32          # QK^T accumulator width (signed)
 SF       = 8           # fractional bits of the scaled score S (chosen by sweep)
 SCALE_SH = 12          # score scale: S = (S_raw * SCALE_M) >>> SCALE_SH
@@ -58,14 +45,7 @@ SCALE_M = int(round(_score_factor * (1 << SCALE_SH)))   # multiplier constant
 
 S_W = ACC_W            # width carried for scaled score (re-use ACC_W, signed)
 
-# --------------------------------------------------------------------------
-# 3. exp() unit   exp(x) = 2^(x * log2e),  x <= 0  (argument is S - m, m_o - m)
-# --------------------------------------------------------------------------
-#   g  = x * LOG2E_FIX                       (G fractional bits added)
-#   TF = SF + G   -> total fractional bits of the base-2 exponent
-#   gn = -g >= 0 ; ishift = gn >> TF ; frac = gn & ((1<<TF)-1)
-#   idx = frac >> (TF - LUT_BITS)            (top LUT_BITS of the fraction)
-#   p   = EXP_LUT[idx] >> ishift             (clamp to 0 if ishift > PF)
+
 PF       = 16          # probability fractional bits ; exp(0) == (1<<PF)
 G        = 14          # extra fractional bits from the log2(e) multiply
 LOG2E_FIX = int(round(math.log2(math.e) * (1 << G)))   # log2(e) in Q(.,G)
@@ -76,30 +56,16 @@ LUT_W    = PF + 2      # LUT data width (value range (0, 1<<PF])
 
 assert TF >= LUT_BITS, "TF must be >= LUT_BITS"
 
-# Clamp: when the (positive) base-2 exponent magnitude exceeds PF the result is
-# guaranteed < 1 LSB, so p == 0.  This is the proposal's "tail clamp" and it
-# also bounds the hardware shifter to [0, PF].
 P_W       = PF + 1     # width of a probability value (max == 1<<PF)
 P_ZERO_GN = (PF + 1) << TF   # gn >= this  ->  p = 0
 
-# --------------------------------------------------------------------------
-# 4. Online-softmax accumulators  (ell, acc) and final divide
-# --------------------------------------------------------------------------
 M_INIT   = -(1 << 28)  # running-max sentinel (-inf surrogate, fits in S_W)
 L_W      = 40          # running denominator ell width (unsigned)
 ACCO_W   = 48          # PV output accumulator width (signed)
 OUT_F    = 8           # output fractional bits
 OUT_W    = 24          # output element width (signed)
 
-# --------------------------------------------------------------------------
-# 5. Clocking + UART framing (PL-only stream front-end)
-# --------------------------------------------------------------------------
-# The Nexys A7 oscillator is 100 MHz, but the fused arithmetic datapath (the
-# combinational exp + un-pipelined DSP chains) does NOT close timing at 100 MHz
-# on the -1 part (measured WNS ~= -13 ns). The whole design is therefore clocked
-# on-chip at CLK_IN_HZ / CORE_DIV (25 MHz), which closes comfortably and leaves
-# the already-verified RTL logic byte-for-byte unchanged. nexys_a7_top.sv
-# generates this divided clock; CORE_DIV here MUST match the divider in top.
+
 CLK_IN_HZ   = 100_000_000   # physical Nexys A7 oscillator (pin E3)
 CORE_DIV    = 4             # on-chip clock divide -> 25 MHz core clock
 CORE_CLK_HZ = CLK_IN_HZ // CORE_DIV
@@ -107,9 +73,7 @@ BAUD        = 115200
 UART_DIV    = CORE_CLK_HZ // BAUD   # baud divider referenced to the CORE clock
 CLK_HZ      = CORE_CLK_HZ   # (kept for backward compatibility)
 
-# --------------------------------------------------------------------------
-# Helper: exp LUT contents (shared by Python and RTL via a .mem file)
-# --------------------------------------------------------------------------
+
 def build_exp_lut():
     """EXP_LUT[i] = round( 2^(-i / LUT_DEPTH) * 2^PF ), i in [0, LUT_DEPTH)."""
     lut = []
@@ -122,7 +86,6 @@ def build_exp_lut():
 
 
 def emit_exp_mem(path):
-    """Write the exp LUT as Verilog $readmemh hex, one entry per line."""
     lut = build_exp_lut()
     hexdigits = (LUT_W + 3) // 4
     with open(path, "w") as f:
@@ -134,8 +97,6 @@ def emit_exp_mem(path):
 
 
 def emit_exp_init(path):
-    """Emit rtl/exp_lut_init.svh: inline ROM initialisation (no file I/O at
-    elaboration), guaranteeing identical contents in simulation and synthesis."""
     lut = build_exp_lut()
     with open(path, "w") as f:
         f.write("// AUTO-GENERATED exp ROM init (include inside an initial block)\n")
@@ -167,8 +128,7 @@ def emit_verilog_pkg(path):
         ("ACCO_W", ACCO_W), ("OUT_F", OUT_F), ("OUT_W", OUT_W),
         ("CORE_DIV", CORE_DIV), ("UART_DIV", UART_DIV),
     ]
-    # Emit as signed `int` so the negative M_INIT sentinel is represented
-    # correctly; all values fit within 32-bit signed range.
+
     for name, val in items:
         L.append(f"localparam int IFA7_{name} = {val};")
     with open(path, "w") as f:
@@ -176,7 +136,6 @@ def emit_verilog_pkg(path):
 
 
 if __name__ == "__main__":
-    # Quick self-print of the derived constants (sanity check for humans).
     print("IFA-7 configuration")
     print(f"  DATA_W={DATA_W} DK={DK} N={N} BR={BR} BC={BC} NBLK={NBLK}")
     print(f"  SF={SF} SCALE_M={SCALE_M} SCALE_SH={SCALE_SH} "

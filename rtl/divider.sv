@@ -1,15 +1,4 @@
-// ============================================================================
-// divider.sv  --  IFA-7 sequential restoring unsigned divider
-// ----------------------------------------------------------------------------
-// Computes  quotient = dividend / divisor  (truncation toward zero) and the
-// remainder, over DW clock cycles.  Used by o_normalize for the FlashAttention
-// "delayed division" O = (acc << OUT_F) / ell.  Sign handling is done outside
-// (the caller divides magnitudes), matching python divide_trunc().
-//
-// Restoring algorithm (one quotient bit per cycle):
-//   r = (r<<1) | dividend[msb] ; dividend <<= 1
-//   if (r >= divisor) { r -= divisor ; quotient[0] = 1 }
-// ============================================================================
+
 `timescale 1ns/1ps
 `default_nettype none
 

@@ -1,22 +1,4 @@
-// ============================================================================
-// exp_unit.sv  --  IFA-7 fully-integer exponential  exp(x) for x <= 0
-// ----------------------------------------------------------------------------
-//   exp(x) = 2^(x * log2e)
-//          = round( EXP_LUT[idx] / 2^ishift )        (clamped to 0 in the tail)
-//
-// where the (idx, ishift) split is round-to-nearest with carry from the
-// fraction into the integer shift.  This module is the bit-exact hardware twin
-// of python/ifa7_fixedpoint.py:exp_fixed().  It is purely combinational; the
-// caller registers the result.
-//
-// Input  x : signed score difference (S - m  or  m_old - m_new), always <= 0
-//            by the online-softmax invariant (enforced/clamped here too).
-// Output p : unsigned probability in Q(.,PF), exp(0) == (1<<PF).
-//
-// This is the heart of the proposal's "retraining-free fixed-point softmax":
-// because the argument is always <= 0 the result is always in (0, 1<<PF], i.e.
-// the recursion is non-amplifying (contraction) and cannot overflow.
-// ============================================================================
+
 `timescale 1ns/1ps
 `default_nettype none
 

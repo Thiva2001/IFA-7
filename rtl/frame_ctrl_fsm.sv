@@ -1,17 +1,4 @@
-// ============================================================================
-// frame_ctrl_fsm.sv  --  IFA-7 PL-only stream front-end controller
-// ----------------------------------------------------------------------------
-// Bridges the UART byte stream to the attention core (no PS, no DDR):
-//
-//   1. LOAD : receive  3*N*DK  bytes  =  Q (N*DK) then K (N*DK) then V (N*DK),
-//             each byte one INT8 element (row-major idx = row*DK + col), and
-//             write them into the core's Q/K/V memories.
-//   2. RUN  : pulse the core start, wait for done.
-//   3. SEND : for each of N*DK output elements, transmit OUT_W bits as 3 bytes,
-//             big-endian (MSB byte first).
-//
-// Host side: python/host_io.py packs/unpacks exactly this framing.
-// ============================================================================
+
 `timescale 1ns/1ps
 `default_nettype none
 

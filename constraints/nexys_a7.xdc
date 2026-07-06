@@ -1,7 +1,6 @@
-## ============================================================================
+
 ## nexys_a7.xdc  --  IFA-7 constraints for Digilent Nexys A7-100T (XC7A100T)
-## Pin assignments taken from the Digilent Nexys A7 master XDC.
-## ============================================================================
+
 
 ## ---- 100 MHz system clock --------------------------------------------------
 set_property -dict { PACKAGE_PIN E3  IOSTANDARD LVCMOS33 } [get_ports { CLK100MHZ }]

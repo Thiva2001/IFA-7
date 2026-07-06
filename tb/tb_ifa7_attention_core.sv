@@ -1,13 +1,4 @@
-// ============================================================================
-// tb_ifa7_attention_core.sv  --  self-checking testbench for the attention core
-// ----------------------------------------------------------------------------
-// Loads Q/K/V from sim/vectors/{q,k,v}.mem, runs one attention pass, then reads
-// the output memory and compares every element to sim/vectors/o_expected.mem
-// (the bit-exact golden output from python/ifa7_golden.py:attention_fixed).
-//
-// Stimulus is driven on the negedge (blocking) so the DUT samples clean values
-// at the posedge -- no clock race.  Run from sim/ (see sim/run_xsim.tcl).
-// ============================================================================
+
 `timescale 1ns/1ps
 `ifndef IFA7_VEC_DIR
   `define IFA7_VEC_DIR "vectors/"

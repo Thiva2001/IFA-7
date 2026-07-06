@@ -1,21 +1,4 @@
-"""
-run_tests.py
-============
-Self-checking regression suite for the IFA-7 golden model.  No external test
-framework required (pure Python + numpy), so it runs anywhere `py` does.
 
-It validates the claims the dissertation rests on:
-  T1  exp unit  : fixed exp(x) matches 2^(x log2 e) within the LUT bound.
-  T2  contraction property: alpha = exp(m_old - m_new) is ALWAYS in [0, 1<<PF]
-      (this is what makes the online recursion non-amplifying / overflow-safe).
-  T3  accuracy : |fixed - float| stays within the error budget over many random
-      problems AND directed corner cases (uniform softmax, near one-hot, zeros,
-      saturated INT8, single hot key).
-  T4  determinism: the fixed model is bit-reproducible (run twice -> identical).
-  T5  width safety: no intermediate exceeds its declared RTL width.
-
-Exit code 0 == all pass (used by sim/run_all so CI can gate on it).
-"""
 
 import sys
 import math
@@ -25,8 +8,7 @@ import ifa7_config as C
 import ifa7_fixedpoint as FX
 import ifa7_golden as G
 
-# Error budget (real V-units, output range ~ +/-128).  Derived empirically and
-# bounded by the analysis in docs/Architecture.md; generous vs measured ~0.21.
+
 MAX_ABS_BUDGET = 1.0     # worst single output element
 RMS_BUDGET     = 0.20    # rms over all elements
 
@@ -44,24 +26,22 @@ def check(cond, msg):
 
 def t1_exp_unit():
     print("T1  exp() unit vs reference 2^(x*log2e)")
-    worst_rel = 0.0     # relative error where probability is non-negligible
-    worst_abs = 0.0     # absolute error everywhere (LSBs of Q(.,PF))
+    worst_rel = 0.0     
+    worst_abs = 0.0     
     for x in range(0, -(60 << C.SF), -1):
         p = FX.exp_fixed(x)
         ref = math.pow(2.0, (x / (1 << C.SF)) * math.log2(math.e)) * (1 << C.PF)
         worst_abs = max(worst_abs, abs(p - ref))
         if ref >= 64.0:         # >= 2^-10 of the max: a meaningful probability
             worst_rel = max(worst_rel, abs(p - ref) / ref)
-    # Relative accuracy where it matters: bounded by the rounded LUT fraction
-    # step (~0.5*ln2/LUT_DEPTH) plus the rounded output shift.
+    
     check(worst_rel < 0.01, f"max relative exp error (p>=2^-10) = {worst_rel:.5f} (< 0.01)")
-    # Absolute error scales with p (fraction quantisation), so bound it
-    # relatively: |p-ref| <= 0.005*ref + 1 LSB everywhere.
+
     check(worst_abs < 0.005 * (1 << C.PF) + 1,
           f"max absolute exp error = {worst_abs:.2f} LSB (< 0.5% of 1.0)")
-    # exp(0) must be exactly 1.0
+    
     check(FX.exp_fixed(0) == (1 << C.PF), f"exp(0) == 1<<PF ({1<<C.PF})")
-    # deep tail must clamp to 0
+    
     check(FX.exp_fixed(-(C.P_ZERO_GN)) == 0, "deep negative arg clamps to 0")
 
 
@@ -98,17 +78,17 @@ def t3_accuracy():
         worst = max(worst, st["max_abs"])
     print(f"      -> worst max_abs over random set = {worst:.4f}")
 
-    # corner cases
+    
     Z = np.zeros((C.N, C.DK), dtype=np.int64)
     rs = np.random.RandomState(7)
     Vr = rs.randint(-128, 128, (C.N, C.DK)).astype(np.int64)
     _accuracy_case("uniform softmax (Q=K=0)", Z, Z, Vr)            # exact
-    # near one-hot: one key strongly aligned with every query
+    
     Q = np.ones((C.N, C.DK), dtype=np.int64)
     K = rs.randint(-1, 2, (C.N, C.DK)).astype(np.int64)
     K[0] = 6                                                       # hot key row 0
     _accuracy_case("near one-hot (hot key)", Q, K, Vr)
-    # saturated INT8 magnitudes (stress score path + clamp)
+    
     Qs = rs.randint(-3, 4, (C.N, C.DK)).astype(np.int64)
     Ks = rs.randint(-3, 4, (C.N, C.DK)).astype(np.int64)
     Vs = np.full((C.N, C.DK), 127, dtype=np.int64)

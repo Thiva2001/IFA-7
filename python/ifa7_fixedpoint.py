@@ -1,28 +1,9 @@
-"""
-ifa7_fixedpoint.py
-==================
-Bit-exact integer primitives shared by the golden model and (by construction)
-by the RTL.  Every function here uses ONLY Python integers and the exact same
-shifts / truncations the SystemVerilog performs, so the hardware can be
-verified against these results bit-for-bit.
-
-Key alignment notes (Python <-> Verilog):
-  * Python `>>` on a non-negative int  == Verilog logical `>>`  (floor).
-  * Python `>>` on a negative int floors toward -inf, which equals Verilog's
-    arithmetic `>>>` on a signed value.  We rely on this for the alpha*acc
-    rescale so signed accumulation matches exactly.
-  * Division in `divide_trunc` truncates toward zero (magnitude // divisor),
-    matching the restoring unsigned divider used in rtl/divider.sv.
-"""
 
 import ifa7_config as C
 
-# The exp LUT is built once and frozen; the RTL reads the identical table from
-# sim/vectors/exp_lut.mem (emitted by gen_vectors.py).
 EXP_LUT = C.build_exp_lut()
 
 
-# Rounding constants for the exp datapath (must match rtl/exp_unit.sv exactly).
 _ROUND_F = 1 << (C.TF - C.LUT_BITS - 1)       # half-LSB at the LUT fraction step
 
 

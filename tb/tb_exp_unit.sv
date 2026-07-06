@@ -1,10 +1,4 @@
-// ============================================================================
-// tb_exp_unit.sv  --  self-checking testbench for rtl/exp_unit.sv
-// ----------------------------------------------------------------------------
-// Reads directed (x, expected_p) pairs from sim/vectors/exp_test.mem (generated
-// by python/gen_vectors.py) and checks the combinational exp unit bit-exactly.
-// Run from the sim/ directory (see sim/run_xsim.tcl).
-// ============================================================================
+
 `timescale 1ns/1ps
 `ifndef IFA7_VEC_DIR
   `define IFA7_VEC_DIR "vectors/"

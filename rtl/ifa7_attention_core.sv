@@ -1,30 +1,4 @@
-// ============================================================================
-// ifa7_attention_core.sv  --  IFA-7 fully-integer online-softmax attention core
-// ----------------------------------------------------------------------------
-// Single-head scaled-dot-product attention with FlashAttention-style streaming
-// (online softmax).  This module is the bit-exact hardware twin of
-// python/ifa7_golden.py:attention_fixed().
-//
-//   For each query row i:
-//     m = -inf ; ell = 0 ; acc[*] = 0
-//     for each key/value block b (BC columns):
-//        S^(b)   = scale( Q_i . K_j )          (QK^T MAC + 1/sqrt(d))
-//        m_new   = max(m, rowmax(S^(b)))
-//        alpha   = exp(m - m_new)              (in (0,1]  -> contraction)
-//        p       = exp(S^(b) - m_new)          (clamped tail)
-//        ell     = alpha*ell + sum(p)
-//        acc[k]  = alpha*acc[k] + sum_j p_j*V[j,k]    (PV MAC)
-//     O[i,k] = (acc[k] << OUT_F) / ell          (delayed division)
-//
-// Numerics (single fixed-point truth): see python/ifa7_config.py + ifa7_pkg.svh.
-//
-// Datapath style: this is the *correctness-reference* microarchitecture -- a
-// sequential MAC (1 multiply/cycle) feeding a fused online-softmax/PV pipeline.
-// It is fully synthesizable and verifies bit-exactly against the golden model.
-// The throughput-optimised variant (DSP-packed BR x BC array, port-aware
-// ping-pong banks via tile_bank_ctrl.sv) is described in docs/Architecture.md;
-// its resource/latency figures are the proposal's analytical projections.
-// ============================================================================
+
 `timescale 1ns/1ps
 `default_nettype none
 

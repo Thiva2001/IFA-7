@@ -1,21 +1,4 @@
-// ============================================================================
-// tile_bank_ctrl.sv  --  IFA-7 BRAM port-aware ping-pong tile bank
-// ----------------------------------------------------------------------------
-// Realises the proposal's contribution #3: a banking + scheduling discipline
-// that removes dual-port BRAM contention between the matmul (producer) and the
-// softmax (consumer) on a few-BRAM fabric.
-//
-// Two physical dual-port BRAM banks form a ping-pong pair.  In any tile phase:
-//   * the producer (QK^T MAC) WRITES the current "fill" bank through port A;
-//   * the consumer (online softmax) READS the previous "drain" bank via port B.
-// Because producer and consumer always touch DIFFERENT banks, and within a bank
-// writes use port A while reads use port B, the MAC and the softmax NEVER share
-// a port in the same cycle -- the contention that collapses utilisation on
-// large arrays (SystolicAttention) is eliminated by construction.
-//
-// `swap` toggles the phase at each tile boundary (driven by the scheduler).
-// This is a reusable IP block; it is exercised by tb/tb_tile_bank_ctrl.sv.
-// ============================================================================
+
 `timescale 1ns/1ps
 `default_nettype none
 

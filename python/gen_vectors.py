@@ -1,21 +1,4 @@
-"""
-gen_vectors.py
-==============
-Generate ALL shared artifacts that keep the RTL and the Python golden model in
-lock-step, and produce the self-checking simulation vectors.
 
-Outputs (relative to the repo root):
-  rtl/ifa7_pkg.svh              localparam package (auto-generated)
-  sim/vectors/exp_lut.mem       exp LUT contents (loaded by rtl/exp_lut.sv)
-  sim/vectors/exp_test.mem      directed exp(x) test pairs  (x_hex  p_hex)
-  sim/vectors/q.mem             Q matrix, row-major, INT8 two's-complement hex
-  sim/vectors/k.mem             K matrix
-  sim/vectors/v.mem             V matrix
-  sim/vectors/o_expected.mem    golden O (Q(.,OUT_F)), OUT_W-bit two's-comp hex
-  sim/vectors/meta.txt          human-readable summary + error stats
-
-Run:   py gen_vectors.py
-"""
 
 import os
 import numpy as np
