@@ -1,0 +1,34 @@
+# Vivado project/build files
+Vivado/
+
+# Documentation (optional)
+docs/
+
+# Reports
+reports/
+
+# Generated markdown report
+vivado_out.md
+
+# Simulation generated files
+sim/vectors/
+
+# Python cache
+python/__pycache__/
+*.pyc
+
+# Vivado temporary files
+*.jou
+*.log
+*.str
+*.cache
+*.hw
+*.runs
+*.sim
+*.gen
+*.ip_user_files
+*.Xil
+
+# Windows
+Thumbs.db
+Desktop.ini
