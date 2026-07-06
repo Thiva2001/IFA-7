@@ -23,8 +23,6 @@ logic of a standard student board.
 | RTL | `rtl/*.sv` synthesizable SystemVerilog | **Reviewed; elaboration/sim to be run in your Vivado 2024** |
 | Testbenches | `tb/*.sv` self-checking vs golden vectors | Provided; run via `vivado/run_sim.tcl` or `sim/run_sim.*` |
 | Vivado flow | `vivado/*.tcl`, `constraints/nexys_a7.xdc` | Provided for Vivado 2024 (xc7a100tcsg324-1) |
-| Docs/figures | `docs/`, `docs/figures/` | run and try |
-
 
 ---
 
@@ -68,27 +66,13 @@ py make_figures.py       # regenerate docs/figures/*.png
 On Linux/macOS replace `py` with `python3`.
 
 ### 3.2 Simulate the RTL (Vivado 2024)
-From the Vivado **Tcl console**, with the working directory set to this folder:
-```
-source vivado/create_project.tcl     ;# build project (xc7a100tcsg324-1)
-source vivado/run_sim.tcl            ;# behavioural sim of tb_ifa7_attention_core
-```
-Look for `TB_CORE: PASS`. To run the other testbenches:
-```
-set_property top tb_exp_unit       [get_filesets sim_1]; source vivado/run_sim.tcl
-set_property top tb_tile_bank_ctrl [get_filesets sim_1]; source vivado/run_sim.tcl
-```
-Alternatively, from a Vivado-enabled shell: `cd sim && ./run_sim.sh` (or `run_sim.bat`).
 
-### 3.3 Synthesise, implement, bitstream
-```
-source vivado/create_project.tcl     ;# if not already created
-source vivado/build.tcl              ;# synth + impl + bitstream + reports
-```
-Reports land in `reports/`; the bitstream in
-`vivado/ifa7_proj/ifa7_proj.runs/impl_1/nexys_a7_top.bit`.
+Create vivado project and add rtl, sim, tb and constraint files. Synthesize and Genarate bit stream. Upload the bit strem to FPGA and run follwoing python scripts.
 
-### 3.4 On-board test (optional)
+Note:
+If you simulate the behaviral simulation, Look for `TB_CORE: PASS`. To run the other testbenches:
+
+### 3.3s On-board test (optional)
 Program the board, then from the host:
 ```
 cd python
@@ -97,7 +81,7 @@ py -c "import numpy as np, ifa7_config as C, host_io; \
        Q=rs.randint(-6,7,(C.N,C.DK)); K=rs.randint(-6,7,(C.N,C.DK)); V=rs.randint(-128,128,(C.N,C.DK)); \
        O=host_io.run_on_board(Q,K,V,'COM5'); print(O[:2])"
 ```
-(needs `pip install pyserial`; replace `COM5` with your port).
+(needs `pip install pyserial`; replace `COM5` with your FPGA Nexya A7 connected Port).
 
 ---
 
@@ -110,17 +94,11 @@ tb/            self-checking SystemVerilog testbenches
 sim/           command-line xsim scripts + generated vectors/
 vivado/        Vivado 2024 Tcl: create_project / run_sim / build
 constraints/   nexys_a7.xdc
-docs/          Architecture, VerificationReport, BuildGuide, ProjectStructure, figures
-reports/       (populated by the Vivado build)
+
 ```
 
-## 5. Documentation
-- `docs/Architecture.md` — microarchitecture, fixed-point numerics, error/overflow analysis, scheduling.
-- `docs/Architecture.pdf` — publication-style summary + figures (regenerate: `py python/make_report_pdf.py`).
-- `docs/VerificationReport.md` — exactly what was tested, results, and what remains for hardware.
-- `docs/BuildGuide.md` — detailed build/run/serial instructions.
-- `docs/ProjectStructure.md` — every file explained.
+## 5. License
 
-## 6. License / citation
-Open research artifact accompanying the IFA-7 dissertation work. If you use it,
-please cite the dissertation proposal and this repository.
+This project is released under the **MIT License**.
+If you find this work useful in your research or projects, please consider citing this repository and acknowledging the original work.
+See the `LICENSE` file for full license details.
